@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("application")
 }
 
 group = "ru.brominemc.oiotung"
@@ -16,6 +17,10 @@ dependencies {
 
 kotlin {
     jvmToolchain(21)
+}
+
+application {
+    mainClass.set("ru.brominemc.oiotung.OiotungClientKt")
 }
 
 tasks.assemble {
