@@ -45,6 +45,8 @@ const val VERSION: Int = 3
 const val ONLINE_MATCH = "%[online]%"
 const val MAX_MATCH = "%[max]%"
 const val FLASH_MATCH = "%[flash]%"
+const val UNIX_MILLIS_MATCH = "%[unix_millis]%"
+const val UNIX_SECONDS_MATCH = "%[unix_seconds]%"
 
 // Utilities
 val RESTART_AFTER: Instant = Instant.now().plus(3, ChronoUnit.DAYS)
@@ -128,6 +130,8 @@ fun connect(config: OConfig) {
                             .replace(ONLINE_MATCH, result.online.toString(), true)
                             .replace(MAX_MATCH, result.max.toString(), true)
                             .replace(FLASH_MATCH, if (lastWasBoar) ":boar:" else ":pig:", true)
+                            .replace(UNIX_MILLIS_MATCH, System.currentTimeMillis().toString())
+                            .replace(UNIX_SECONDS_MATCH, (System.currentTimeMillis() / 1000L).toString())
                         for (server in result.servers) {
                             data = data
                                 .replace("%[${server.name}_offline_queue]%", server.offlineQueue.toString(), true)
@@ -159,7 +163,10 @@ fun connect(config: OConfig) {
         }
     } catch (e: Exception) {
         try {
-            val data = config.discordDataOffline.replace(FLASH_MATCH, if (lastWasBoar) ":boar:" else ":pig:", true)
+            val data = config.discordDataOffline
+                .replace(FLASH_MATCH, if (lastWasBoar) ":boar:" else ":pig:", true)
+                .replace(UNIX_MILLIS_MATCH, System.currentTimeMillis().toString())
+                .replace(UNIX_SECONDS_MATCH, (System.currentTimeMillis() / 1000L).toString())
             Logger.debug("Sending HTTP request...")
             val response = CLIENT.send(
                 HttpRequest.newBuilder(config.discordEndpoint)
