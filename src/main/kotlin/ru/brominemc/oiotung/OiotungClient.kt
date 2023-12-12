@@ -42,13 +42,13 @@ import kotlin.system.exitProcess
 // Constants
 const val MAGIC_HEADER: Int = 0xEBACA_BEE.toInt()
 const val VERSION: Int = 3
+const val ONLINE_MATCH = "%[online]%"
+const val MAX_MATCH = "%[max]%"
+const val FLASH_MATCH = "%[flash]%"
 
 // Utilities
 val RESTART_AFTER: Instant = Instant.now().plus(3, ChronoUnit.DAYS)
 val CLIENT: HttpClient = HttpClient.newHttpClient()
-val ONLINE_REGEX = Regex.fromLiteral("%[online]%")
-val MAX_REGEX = Regex.fromLiteral("%[max]%")
-val FLASH_REGEX = Regex.fromLiteral("%[flash]%")
 var lastWasBoar = false
 
 /**
@@ -125,17 +125,16 @@ fun connect(config: OConfig) {
                         Logger.info("Result: $result")
 
                         var data = config.discordDataOnline
-                            .replace(ONLINE_REGEX, result.online.toString())
-                            .replace(MAX_REGEX, result.max.toString())
-                            .replace(FLASH_REGEX, if (lastWasBoar) ":boar:" else ":pig:")
+                            .replace(ONLINE_MATCH, result.online.toString(), true)
+                            .replace(MAX_MATCH, result.max.toString(), true)
+                            .replace(FLASH_MATCH, if (lastWasBoar) ":boar:" else ":pig:", true)
                         for (server in result.servers) {
                             data = data
-                                .replace("%[${server.name}_offline_queue]%".toRegex(RegexOption.LITERAL), server.offlineQueue.toString())
-                                .replace("%[${server.name}_deprecated_queue]%".toRegex(RegexOption.LITERAL), server.deprecatedQueue.toString())
-                                .replace("%[${server.name}_online]%".toRegex(RegexOption.LITERAL), server.players.toString())
-                                .replace("%[${server.name}_max]%".toRegex(RegexOption.LITERAL), server.cap.toString())
+                                .replace("%[${server.name}_offline_queue]%", server.offlineQueue.toString(), true)
+                                .replace("%[${server.name}_deprecated_queue]%", server.deprecatedQueue.toString(), true)
+                                .replace("%[${server.name}_online]%", server.players.toString(), true)
+                                .replace("%[${server.name}_max]%", server.cap.toString(), true)
                         }
-
                         Logger.debug("Sending HTTP request...")
                         val response = CLIENT.send(
                             HttpRequest.newBuilder(config.discordEndpoint)
@@ -159,7 +158,7 @@ fun connect(config: OConfig) {
         }
     } catch (e: Exception) {
         try {
-            val data = config.discordDataOffline.replace(FLASH_REGEX, if (lastWasBoar) ":boar:" else ":pig:")
+            val data = config.discordDataOffline.replace(FLASH_MATCH, if (lastWasBoar) ":boar:" else ":pig:", true)
             Logger.debug("Sending HTTP request...")
             val response = CLIENT.send(
                 HttpRequest.newBuilder(config.discordEndpoint)
