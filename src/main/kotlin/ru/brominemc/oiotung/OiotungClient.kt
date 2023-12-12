@@ -142,12 +142,13 @@ fun connect(config: OConfig) {
                                 .header("Content-Type", "application/json")
                                 .timeout(config.discordTimeout)
                                 .method("PATCH", BodyPublishers.ofString(data))
-                                .build(), BodyHandlers.discarding()
+                                .build(), BodyHandlers.ofString()
                         )
-                        Logger.debug("Got HTTP response: $response")
+                        val fullResponse = "$response (${response.headers()}): ${response.body()}".replace(config.discordEndpoint.toString(), "[ENDPOINT]");
+                        Logger.debug("Got HTTP response: $fullResponse")
                         val code = response.statusCode()
                         response.headers().firstValue("Retry-After").ifPresent {
-                            Logger.info("HTTP response $response asked us to sleep for $it, doing it...")
+                            Logger.info("HTTP response $fullResponse asked us to sleep for $it, doing it...")
                             Thread.sleep(Duration.ofSeconds(it.toLong()))
                         }
                         require(code in 200..299) { "Invalid response code $code" }
@@ -166,12 +167,13 @@ fun connect(config: OConfig) {
                     .header("Content-Type", "application/json")
                     .timeout(config.discordTimeout)
                     .method("PATCH", BodyPublishers.ofString(data))
-                    .build(), BodyHandlers.discarding()
+                    .build(), BodyHandlers.ofString()
             )
-            Logger.debug("Got HTTP response: $response")
+            val fullResponse = "$response (${response.headers()}): ${response.body()}".replace(config.discordEndpoint.toString(), "[ENDPOINT]");
+            Logger.debug("Got HTTP response: $fullResponse")
             val code = response.statusCode()
             response.headers().firstValue("Retry-After").ifPresent {
-                Logger.info("HTTP response $response asked us to sleep for $it, doing it...")
+                Logger.info("HTTP response $fullResponse asked us to sleep for $it, doing it...")
                 Thread.sleep(Duration.ofSeconds(it.toLong()))
             }
             require(code in 200..299) { "Invalid response code $code" }
